@@ -2,7 +2,11 @@ import { useMemo } from 'react';
 
 import { SelectableList, SelectableListOption } from 'components';
 import { AlbumView, ViewOptions } from 'components/views';
-import { useDataFetcher, useMenuHideWindow, useScrollHandler } from 'hooks';
+import {
+  useFetchArtistAlbums,
+  useMenuHideWindow,
+  useScrollHandler,
+} from 'hooks';
 import * as Utils from 'utils';
 
 interface Props {
@@ -14,8 +18,7 @@ interface Props {
 const ArtistView = ({ id, inLibrary = false }: Props) => {
   useMenuHideWindow(ViewOptions.artist.id);
 
-  const { data: albums, isLoading } = useDataFetcher<IpodApi.Album[]>({
-    name: 'artist',
+  const { data: albums, isLoading } = useFetchArtistAlbums({
     id,
     inLibrary,
   });
@@ -23,6 +26,7 @@ const ArtistView = ({ id, inLibrary = false }: Props) => {
     () =>
       albums?.map((album) => ({
         type: 'View',
+        headerTitle: album.name,
         label: album.name,
         sublabel: album.artistName,
         imageUrl: Utils.getArtwork(100, album.artwork?.url),

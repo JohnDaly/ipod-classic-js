@@ -12,7 +12,7 @@ type FetchAppleMusicApiArgs = {
 
 /** Connects to the Apple Music API to return data to the UI. */
 const useMKDataFetcher = () => {
-  const { music } = useMusicKit();
+  const { music, isConfigured } = useMusicKit();
 
   const fetchAppleMusicApi = useCallback(
     async <TApiResponseType extends object>({
@@ -20,6 +20,13 @@ const useMKDataFetcher = () => {
       inLibrary = false,
       params = {},
     }: FetchAppleMusicApiArgs) => {
+      if (!music || !isConfigured) {
+        console.error(
+          `MusicKit is not configured. Unable to fetch ${endpoint}.`
+        );
+        return;
+      }
+
       const baseUrl = inLibrary
         ? `/v1/me/library/${endpoint}`
         : `/v1/catalog/{{storefrontId}}/${endpoint}`;
@@ -34,10 +41,10 @@ const useMKDataFetcher = () => {
         return response.data as TApiResponseType;
       } catch (error) {
         // TODO: Show a popup instead.
-        throw new Error(error);
+        console.error(error);
       }
     },
-    [music.api]
+    [isConfigured, music]
   );
 
   const fetchAlbums = useCallback(async () => {
@@ -76,7 +83,7 @@ const useMKDataFetcher = () => {
       inLibrary: true,
     });
 
-    return response.data.map(ConversionUtils.convertAppleArtist);
+    return response?.data.map(ConversionUtils.convertAppleArtist);
   }, [fetchAppleMusicApi]);
 
   const fetchArtistAlbums = useCallback(
@@ -86,7 +93,7 @@ const useMKDataFetcher = () => {
         inLibrary,
       });
 
-      return response.data.map((item: AppleMusicApi.Album) =>
+      return response?.data.map((item: AppleMusicApi.Album) =>
         ConversionUtils.convertAppleAlbum(item)
       );
     },
@@ -102,7 +109,7 @@ const useMKDataFetcher = () => {
       inLibrary: true,
     });
 
-    return response.data.map(ConversionUtils.convertApplePlaylist);
+    return response?.data.map(ConversionUtils.convertApplePlaylist);
   }, [fetchAppleMusicApi]);
 
   const fetchPlaylist = useCallback(
@@ -117,7 +124,30 @@ const useMKDataFetcher = () => {
         }
       );
 
-      return ConversionUtils.convertApplePlaylist(response.data[0]);
+      if (!response) {
+        return;
+      }
+
+      return ConversionUtils.convertApplePlaylist(response?.data[0]);
+    },
+    [fetchAppleMusicApi]
+  );
+
+  const fetchSearchResults = useCallback(
+    async (query: string) => {
+      const response = await fetchAppleMusicApi<AppleMusicApi.SearchResponse>({
+        endpoint: `search`,
+        params: {
+          term: query,
+          types: 'albums,artists,playlists,songs',
+        },
+      });
+
+      if (!response) {
+        return;
+      }
+
+      return ConversionUtils.convertAppleSearchResults(response);
     },
     [fetchAppleMusicApi]
   );
@@ -129,6 +159,7 @@ const useMKDataFetcher = () => {
     fetchArtistAlbums,
     fetchPlaylists,
     fetchPlaylist,
+    fetchSearchResults,
   };
 };
 

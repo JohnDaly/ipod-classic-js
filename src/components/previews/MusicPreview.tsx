@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { previewSlideRight } from 'animation';
 import { AuthPrompt, KenBurns, LoadingScreen } from 'components';
 import { motion } from 'framer-motion';
-import { useDataFetcher, useSettings } from 'hooks';
+import { useFetchAlbums, useSettings } from 'hooks';
 import styled from 'styled-components';
 
 const Container = styled(motion.div)`
@@ -17,29 +17,29 @@ const Container = styled(motion.div)`
 
 const MusicPreview = () => {
   const { isSpotifyAuthorized, isAppleAuthorized } = useSettings();
+
   const {
     data: albums,
     isLoading,
-    hasError,
-  } = useDataFetcher<IpodApi.Album[]>({
-    name: 'albums',
+    error,
+  } = useFetchAlbums({
     artworkSize: 400,
   });
 
   const artworkUrls = useMemo(() => {
-    if (albums && !hasError) {
+    if (albums && !error) {
       return albums.map((album) => album.artwork?.url ?? '');
     }
 
     return [];
-  }, [albums, hasError]);
+  }, [albums, error]);
 
   return (
     <Container {...previewSlideRight}>
-      {isLoading ? (
-        <LoadingScreen backgroundColor="linear-gradient(180deg, #B1B5C0 0%, #686E7A 100%)" />
-      ) : !isSpotifyAuthorized && !isAppleAuthorized ? (
+      {!isSpotifyAuthorized && !isAppleAuthorized ? (
         <AuthPrompt message="Sign in to view your library" />
+      ) : isLoading && !albums ? (
+        <LoadingScreen backgroundColor="linear-gradient(180deg, #B1B5C0 0%, #686E7A 100%)" />
       ) : (
         <KenBurns urls={artworkUrls} />
       )}

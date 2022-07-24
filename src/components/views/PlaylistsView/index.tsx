@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { AuthPrompt, SelectableList, SelectableListOption } from 'components';
 import {
-  useDataFetcher,
+  useFetchPlaylists,
   useMenuHideWindow,
   useScrollHandler,
   useSettings,
@@ -11,26 +11,40 @@ import * as Utils from 'utils';
 
 import ViewOptions, { PlaylistView } from '../';
 
-const PlaylistsView = () => {
+interface Props {
+  playlists?: IpodApi.Playlist[];
+  inLibrary?: boolean;
+}
+
+const PlaylistsView = ({ playlists, inLibrary = true }: Props) => {
   useMenuHideWindow(ViewOptions.playlists.id);
   const { isAuthorized } = useSettings();
-  const { data, isLoading } = useDataFetcher<IpodApi.Playlist[]>({
-    name: 'playlists',
-  });
+  const { data: fetchedPlaylists, isLoading: isQueryLoading } =
+    useFetchPlaylists({
+      lazy: !!playlists,
+    });
 
   const options: SelectableListOption[] = useMemo(
     () =>
-      data?.map((playlist) => ({
+      (playlists ?? fetchedPlaylists)?.map((playlist) => ({
         type: 'View',
         label: playlist.name,
         sublabel: playlist.description || `By ${playlist.curatorName}`,
         imageUrl: playlist.artwork?.url,
         viewId: ViewOptions.playlist.id,
-        component: () => <PlaylistView id={playlist.id} inLibrary />,
+        headerTitle: playlist.name,
+        component: () => (
+          <PlaylistView id={playlist.id} inLibrary={inLibrary} />
+        ),
         longPressOptions: Utils.getMediaOptions('playlist', playlist.id),
       })) ?? [],
-    [data]
+    [fetchedPlaylists, inLibrary, playlists]
   );
+
+  // If accessing PlaylistsView from the SearchView, and there is no data cached,
+  // 'isQueryLoading' will be true. To prevent an infinite loading screen in these
+  // cases, we'll check if we have any 'options'
+  const isLoading = !options.length && isQueryLoading;
 
   const [scrollIndex] = useScrollHandler(ViewOptions.playlists.id, options);
 

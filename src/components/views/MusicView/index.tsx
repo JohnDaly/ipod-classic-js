@@ -8,6 +8,7 @@ import {
   CoverFlowView,
   NowPlayingView,
   PlaylistsView,
+  SearchView,
   ViewOptions,
 } from 'components/views';
 import { useMenuHideWindow, useMusicKit, useScrollHandler } from 'hooks';
@@ -44,6 +45,13 @@ const MusicView = () => {
         label: 'Albums',
         viewId: ViewOptions.albums.id,
         component: () => <AlbumsView />,
+        preview: PREVIEW.MUSIC,
+      },
+      {
+        type: 'View',
+        label: 'Search',
+        viewId: ViewOptions.search.id,
+        component: () => <SearchView />,
         preview: PREVIEW.MUSIC,
       },
     ];

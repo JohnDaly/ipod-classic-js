@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { ScrollWheel } from 'components';
 import {
@@ -13,7 +14,7 @@ import styled, { createGlobalStyle } from 'styled-components';
 import { Screen, Unit } from 'utils/constants';
 
 import { WindowManager } from './components';
-import { DeviceTheme, getTheme } from './utils/themes';
+import { DeviceThemeName, getTheme } from './utils/themes';
 
 const GlobalStyles = createGlobalStyle`
   * {
@@ -45,7 +46,7 @@ const Container = styled.div`
   justify-content: center;
 `;
 
-const Shell = styled.div<{ deviceTheme: DeviceTheme }>`
+const Shell = styled.div<{ deviceTheme: DeviceThemeName }>`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -58,6 +59,7 @@ const Shell = styled.div<{ deviceTheme: DeviceTheme }>`
   background: ${({ deviceTheme }) => getTheme(deviceTheme).body.background};
   -webkit-box-reflect: below 0px -webkit-gradient(linear, left top, left bottom, from(transparent), color-stop(50%, transparent), to(rgba(250, 250, 250, 0.3)));
   animation: descend 1.5s ease;
+  overflow: hidden;
 
   @media (prefers-color-scheme: dark) {
     box-shadow: inset 0 0 2.4em black;
@@ -84,6 +86,27 @@ const Shell = styled.div<{ deviceTheme: DeviceTheme }>`
   }
 `;
 
+const Sticker = styled.div<{ deviceTheme: DeviceThemeName }>`
+  position: absolute;
+  background: ${({ deviceTheme }) =>
+    getTheme(deviceTheme).body.sticker1?.background};
+  ${({ deviceTheme }) => getTheme(deviceTheme).body.sticker1?.styles ?? {}};
+`;
+
+const Sticker2 = styled.div<{ deviceTheme: DeviceThemeName }>`
+  position: absolute;
+  background: ${({ deviceTheme }) =>
+    getTheme(deviceTheme).body.sticker2?.background};
+  ${({ deviceTheme }) => getTheme(deviceTheme).body.sticker2?.styles ?? {}};
+`;
+
+const Sticker3 = styled.div<{ deviceTheme: DeviceThemeName }>`
+  position: absolute;
+  background: ${({ deviceTheme }) =>
+    getTheme(deviceTheme).body.sticker3?.background};
+  ${({ deviceTheme }) => getTheme(deviceTheme).body.sticker3?.styles ?? {}};
+`;
+
 const ScreenContainer = styled.div`
   position: relative;
   height: 260px;
@@ -101,25 +124,34 @@ const ScreenContainer = styled.div`
   }
 
   ${Screen.SM.MediaQuery} {
-    margin: ${Unit.SM} ${Unit.SM} 0;
+    margin: ${Unit.MD} ${Unit.MD} 0;
   }
 `;
 
+// Create a client
+const queryClient = new QueryClient();
+
 const App: React.FC = () => {
   return (
-    <Container>
-      <GlobalStyles />
-      <SettingsProvider>
-        <Ipod />
-      </SettingsProvider>
-    </Container>
+    <QueryClientProvider client={queryClient}>
+      <Container>
+        <GlobalStyles />
+        <SettingsProvider>
+          <Ipod />
+        </SettingsProvider>
+      </Container>
+    </QueryClientProvider>
   );
 };
 
 const Ipod = () => {
   const { deviceTheme } = useSettings();
+
   return (
     <Shell deviceTheme={deviceTheme}>
+      <Sticker deviceTheme={deviceTheme} />
+      <Sticker2 deviceTheme={deviceTheme} />
+      <Sticker3 deviceTheme={deviceTheme} />
       <ScreenContainer>
         <WindowProvider>
           <SpotifySDKProvider>

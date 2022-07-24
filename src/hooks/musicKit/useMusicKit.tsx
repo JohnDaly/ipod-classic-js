@@ -8,7 +8,6 @@ import React, {
   useState,
 } from 'react';
 
-import { ErrorScreen } from 'components';
 import { useEventListener, useMKEventListener, useSettings } from 'hooks';
 
 /**
@@ -16,7 +15,8 @@ import { useEventListener, useMKEventListener, useSettings } from 'hooks';
  * @see https://developer.apple.com/documentation/applemusicapi/getting_keys_and_creating_tokens
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const DEVELOPER_TOKEN: string | undefined = undefined;
+const DEVELOPER_TOKEN: string | undefined =
+  process.env.REACT_APP_APPLE_DEV_TOKEN;
 
 export interface MusicKitState {
   musicKit: typeof MusicKit;
@@ -37,12 +37,13 @@ export const useMusicKit = (): MusicKitHook => {
   const { setIsAppleAuthorized, isSpotifyAuthorized, setService } =
     useSettings();
   const { isConfigured, hasDevToken } = useContext(MusicKitContext);
+
   const music = useMemo(() => {
     if (!isConfigured || !hasDevToken) {
       return {} as MusicKit.MusicKitInstance;
     }
 
-    return window.MusicKit.getInstance();
+    return window.MusicKit?.getInstance();
   }, [hasDevToken, isConfigured]);
 
   const signIn = useCallback(async () => {
@@ -79,8 +80,11 @@ export const MusicKitProvider = ({ children }: Props) => {
   const musicKit = window.MusicKit;
   const [hasDevToken, setHasDevToken] = useState(false);
   const [isConfigured, setIsConfigured] = useState(false);
-  const { setIsAppleAuthorized, setService: setStreamingService } =
-    useSettings();
+  const {
+    isSpotifyAuthorized,
+    setIsAppleAuthorized,
+    setService: setStreamingService,
+  } = useSettings();
 
   const handleConfigure = useCallback(async () => {
     try {
@@ -119,7 +123,7 @@ export const MusicKitProvider = ({ children }: Props) => {
       setStreamingService('apple');
     } else {
       setIsAppleAuthorized(false);
-      setStreamingService(undefined);
+      setStreamingService(isSpotifyAuthorized ? 'spotify' : undefined);
     }
   });
 
@@ -129,11 +133,7 @@ export const MusicKitProvider = ({ children }: Props) => {
 
   return (
     <MusicKitContext.Provider value={{ musicKit, isConfigured, hasDevToken }}>
-      {isConfigured ? (
-        children
-      ) : (
-        <ErrorScreen message={'Missing Apple developer token'} />
-      )}
+      {children}
     </MusicKitContext.Provider>
   );
 };
