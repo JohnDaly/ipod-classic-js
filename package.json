@@ -20,6 +20,7 @@
     "lodash.uniqby": "^4.7.0",
     "long-press-event": "^2.4.4",
     "next": "12.2.3",
+    "next-auth": "^4.10.2",
     "pluralize": "^8.0.0",
     "prettier": "^2.7.1",
     "query-string": "^7.1.1",

@@ -19,10 +19,9 @@ import {
 
 type Props = {
   appleToken: string;
-  spotifyToken: string;
 };
 
-const Ipod = ({ appleToken, spotifyToken }: Props) => {
+const Ipod = ({ appleToken }: Props) => {
   const { deviceTheme } = useSettings();
 
   return (
@@ -32,7 +31,7 @@ const Ipod = ({ appleToken, spotifyToken }: Props) => {
       <Sticker3 deviceTheme={deviceTheme} />
       <ScreenContainer>
         <WindowProvider>
-          <SpotifySDKProvider token={spotifyToken}>
+          <SpotifySDKProvider>
             <MusicKitProvider token={appleToken}>
               <AudioPlayerProvider>
                 <WindowManager />

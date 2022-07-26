@@ -68,7 +68,7 @@ const Home: NextPage<Props> = ({ appleToken, spotifyToken }) => {
       </Head>
       <Main>
         <SettingsProvider>
-          <Ipod spotifyToken={spotifyToken} appleToken={appleToken} />
+          <Ipod appleToken={appleToken} />
         </SettingsProvider>
       </Main>
       <Script src="https://js-cdn.music.apple.com/musickit/v3/musickit.js" />
